@@ -16,3 +16,14 @@ func (s *Storage) GetSessions(ctx context.Context, n int) ([]*models.Session, er
 
 	return sessions, nil
 }
+
+func (s *Storage) GetSessionById(ctx context.Context, id string) (*models.Session, error) {
+	tr := s.getter.DefaultTrOrDB(ctx, s.db).WithContext(ctx)
+	var session models.Session
+	err := tr.Where("id = ?", id).First(&session).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &session, nil
+}

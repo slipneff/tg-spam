@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gotd/td/telegram"
+	"github.com/slipneff/tg-spam/internal/models"
 	"github.com/slipneff/tg-spam/internal/utils/config"
 )
 
@@ -18,6 +19,7 @@ type Storage interface {
 	SetLastMessageID(ctx context.Context, key string, value int) error
 
 	GetSessions(ctx context.Context, n int) ([]string, error)
+	GetSessionById(ctx context.Context, id string) (*models.Session, error)
 }
 
 func NewWorker(Client *telegram.Client, cfg *config.Config) *Worker {

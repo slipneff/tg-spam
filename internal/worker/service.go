@@ -12,12 +12,6 @@ import (
 	myTg "github.com/slipneff/tg-spam/pkg/tg"
 )
 
-// worker always catching new posts from channel. Start a t.func when it get new post and update last_message_id in db
-
-// t.func get n sessions from db, start n goroutins and provide lastPostId
-
-// goroutin should get telegram client with session and send a message
-
 func (s *Worker) CatchLastPost(ctx context.Context, channelName string) {
 	api := s.Client.API()
 	channel, err := api.ContactsResolveUsername(ctx, channelName)
@@ -36,6 +30,7 @@ func (s *Worker) CatchLastPost(ctx context.Context, channelName string) {
 			ChannelID:  c.ID,
 			AccessHash: c.AccessHash,
 		}
+		
 	default:
 		log.Error(errors.New("unexpected chat type"), "unexpected chat type", channelName)
 	}
@@ -90,6 +85,11 @@ func (s *Worker) prepareGoroutines(ctx context.Context, n int, peer tg.InputPeer
 			if err := binary.Read(rand.Reader, binary.BigEndian, &randomID); err != nil {
 				return
 			}
+			// _, err = api.ChannelsJoinChannel(ctx, peer.(tg.InputChannelClass))
+			// if err != nil {
+			// 	log.Error(err, "join channel error")
+			// 	return
+			// }
 			_, err = api.MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 				Peer:     peer,
 				Message:  "Bello!",
