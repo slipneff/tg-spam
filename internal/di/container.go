@@ -11,6 +11,7 @@ import (
 	"github.com/slipneff/tg-spam/internal/service"
 	"github.com/slipneff/tg-spam/internal/storage/sql"
 	"github.com/slipneff/tg-spam/internal/worker"
+	"github.com/slipneff/tg-spam/pkg/gpt"
 
 	"gorm.io/gorm"
 
@@ -23,6 +24,7 @@ type Container struct {
 
 	service            *service.Service
 	worker             *worker.Worker
+	gptClient          *gpt.Client
 	storage            *sql.Storage
 	db                 *gorm.DB
 	transactionManager trm.Manager
@@ -59,7 +61,13 @@ func (c *Container) GetService() *service.Service {
 func (c *Container) GetWorker() *worker.Worker {
 	client := telegram.NewClient(c.cfg.Telegram.AppID, c.cfg.Telegram.AppHash, telegram.Options{})
 	return get(&c.worker, func() *worker.Worker {
-		return worker.NewWorker(client, c.cfg)
+		return worker.NewWorker(client, c.GetGPTClient(), c.cfg)
+	})
+}
+
+func (c *Container) GetGPTClient() *gpt.Client {
+	return get(&c.gptClient, func() *gpt.Client {
+		return gpt.New(c.cfg)
 	})
 }
 

@@ -24,6 +24,7 @@ type Config struct {
 	Port         uint16
 	SessionsPath string
 	BotToken     string
+	GPTToken     string
 	DB           DataBaseConfig
 	Telegram     TelegramConfig
 }

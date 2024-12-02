@@ -30,7 +30,7 @@ func (s *Worker) CatchLastPost(ctx context.Context, channelName string) {
 			ChannelID:  c.ID,
 			AccessHash: c.AccessHash,
 		}
-		
+
 	default:
 		log.Error(errors.New("unexpected chat type"), "unexpected chat type", channelName)
 	}
@@ -62,8 +62,8 @@ func (s *Worker) CatchLastPost(ctx context.Context, channelName string) {
 			log.Error(err, fmt.Sprintf("unexpected messages type: %T", posts), channelName)
 		}
 	}
-	// lastPost.Message
-	err = s.prepareGoroutines(ctx, 1, peer, lastPost.ID)
+
+	err = s.prepareGoroutines(ctx, 1, peer, lastPost.ID, lastPost.Message)
 	if err != nil {
 		log.Error(err, "prepare goroutines error", channelName)
 	}
@@ -73,7 +73,7 @@ func (s *Worker) CatchLastPost(ctx context.Context, channelName string) {
 	}
 }
 
-func (s *Worker) prepareGoroutines(ctx context.Context, n int, peer tg.InputPeerClass, lastPost int) error {
+func (s *Worker) prepareGoroutines(ctx context.Context, n int, peer tg.InputPeerClass, lastPost int, msg string) error {
 	sessions, err := s.storage.GetSessions(ctx, n)
 	if err != nil {
 		return err
@@ -90,9 +90,14 @@ func (s *Worker) prepareGoroutines(ctx context.Context, n int, peer tg.InputPeer
 			// 	log.Error(err, "join channel error")
 			// 	return
 			// }
+			com, err := s.gptClient.NewMessage(ctx, msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+
 			_, err = api.MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
 				Peer:     peer,
-				Message:  "Bello!",
+				Message:  com,
 				RandomID: randomID,
 				ReplyTo: &tg.InputReplyToMessage{
 					ReplyToMsgID: lastPost,
@@ -101,6 +106,7 @@ func (s *Worker) prepareGoroutines(ctx context.Context, n int, peer tg.InputPeer
 			if err != nil {
 				return
 			}
+
 		}(session)
 	}
 	return nil
